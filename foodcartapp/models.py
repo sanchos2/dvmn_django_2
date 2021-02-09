@@ -49,7 +49,7 @@ class Product(models.Model):  # noqa: D101
     )
     image = models.ImageField('картинка')
     special_status = models.BooleanField('спец.предложение', default=False, db_index=True)
-    description = models.TextField('описание', max_length=200, blank=True)  # noqa: WPS432
+    description = models.TextField('описание', blank=True)  # noqa: WPS432
 
     objects = ProductQuerySet.as_manager()  # noqa: WPS110
 
