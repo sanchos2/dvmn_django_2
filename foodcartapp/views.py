@@ -1,7 +1,9 @@
+import json
+
 from django.http import JsonResponse
 from django.templatetags.static import static
 
-from foodcartapp.models import Product
+from foodcartapp.models import Order, OrderItem, Product
 
 
 def banners_list_api(request):  # noqa: D103
@@ -57,5 +59,20 @@ def product_list_api(request):  # noqa: D103
 
 
 def register_order(request):  # noqa: D103
-    # TODO это лишь заглушка
+    try:
+        serialized_order = json.loads(request.body.decode())
+    except ValueError:
+        return JsonResponse({'error': 'data not recognized'})
+    order = Order.objects.create(
+        firstname=serialized_order['firstname'],
+        lastname=serialized_order['lastname'],
+        phonenumber=serialized_order['phonenumber'],
+        address=serialized_order['address'],
+    )
+    for product in serialized_order['products']:
+        OrderItem.objects.create(
+            order=order,
+            product_id=product['product'],
+            quantity=product['quantity'],
+        )
     return JsonResponse({})

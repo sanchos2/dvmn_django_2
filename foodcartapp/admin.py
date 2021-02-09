@@ -3,7 +3,9 @@ from django.shortcuts import reverse
 from django.templatetags.static import static
 from django.utils.html import format_html
 
-from foodcartapp.models import Product, ProductCategory, Restaurant, RestaurantMenuItem  # noqa:  I001
+from foodcartapp.models import Product, ProductCategory  # noqa:  I001
+from foodcartapp.models import Restaurant, RestaurantMenuItem  # noqa:  I001
+from foodcartapp.models import Order, OrderItem  # noqa:  I001
 
 
 class RestaurantMenuItemInline(admin.TabularInline):  # noqa: D101
@@ -105,3 +107,13 @@ class ProductAdmin(admin.ModelAdmin):  # noqa: D101
 @admin.register(ProductCategory)
 class ProductAdmin(admin.ModelAdmin):  # noqa: D101, WPS440, F811
     pass  # noqa: WPS420, WPS604
+
+
+class OrderItemInline(admin.TabularInline):  # noqa: D101
+    model = OrderItem
+    extra = 0
+
+
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):  # noqa: D101
+    inlines = [OrderItemInline]

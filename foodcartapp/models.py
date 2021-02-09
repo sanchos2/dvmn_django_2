@@ -1,5 +1,6 @@
 from django.core.validators import MinValueValidator
 from django.db import models
+from phonenumber_field.modelfields import PhoneNumberField
 
 
 class Restaurant(models.Model):  # noqa: D101
@@ -85,3 +86,48 @@ class RestaurantMenuItem(models.Model):  # noqa: D101
 
     def __str__(self):  # noqa: D105
         return f'{self.restaurant.name} - {self.product.name}'
+
+
+class Order(models.Model):
+    """Заказ."""
+
+    firstname = models.CharField('Имя', max_length=50)  # noqa: WPS432
+    lastname = models.CharField('Фамилия', max_length=50, blank=True)  # noqa: WPS432
+    phonenumber = PhoneNumberField('Телефон', region='RU')
+    address = models.TextField('Адрес доставки')
+    order_date = models.DateTimeField('Дата/время заказа', auto_now_add=True)
+
+    class Meta:  # noqa: D106, WPS306
+
+        verbose_name = 'Заказ'
+        verbose_name_plural = 'Заказы'
+        ordering = ['order_date']
+
+    def __str__(self):  # noqa: D105
+        return f'{self.firstname} {self.lastname} {self.address}'
+
+
+class OrderItem(models.Model):
+    """Позиция заказа."""
+
+    order = models.ForeignKey(
+        Order,
+        on_delete=models.CASCADE,
+        related_name='order_items',
+        verbose_name='Заказ',
+    )
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name='order_items',
+        verbose_name='Продукт',
+    )
+    quantity = models.PositiveIntegerField('Количество', validators=[MinValueValidator(1)])
+
+    class Meta:  # noqa: D106, WPS306
+
+        verbose_name = 'Позиция заказа'
+        verbose_name_plural = 'Позиции заказа'
+
+    def __str__(self):  # noqa: D105
+        return f'{self.product} - {self.quantity}'
