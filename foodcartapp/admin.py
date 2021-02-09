@@ -3,19 +3,16 @@ from django.shortcuts import reverse
 from django.templatetags.static import static
 from django.utils.html import format_html
 
-from .models import Product
-from .models import ProductCategory
-from .models import Restaurant
-from .models import RestaurantMenuItem
+from foodcartapp.models import Product, ProductCategory, Restaurant, RestaurantMenuItem  # noqa:  I001
 
 
-class RestaurantMenuItemInline(admin.TabularInline):
+class RestaurantMenuItemInline(admin.TabularInline):  # noqa: D101
     model = RestaurantMenuItem
     extra = 0
 
 
 @admin.register(Restaurant)
-class RestaurantAdmin(admin.ModelAdmin):
+class RestaurantAdmin(admin.ModelAdmin):  # noqa: D101
     search_fields = [
         'name',
         'address',
@@ -27,12 +24,12 @@ class RestaurantAdmin(admin.ModelAdmin):
         'contact_phone',
     ]
     inlines = [
-        RestaurantMenuItemInline
+        RestaurantMenuItemInline,
     ]
 
 
 @admin.register(Product)
-class ProductAdmin(admin.ModelAdmin):
+class ProductAdmin(admin.ModelAdmin):  # noqa: D101
     list_display = [
         'get_image_list_preview',
         'name',
@@ -53,7 +50,7 @@ class ProductAdmin(admin.ModelAdmin):
     ]
 
     inlines = [
-        RestaurantMenuItemInline
+        RestaurantMenuItemInline,
     ]
     fieldsets = (
         ('Общее', {
@@ -63,7 +60,7 @@ class ProductAdmin(admin.ModelAdmin):
                 'image',
                 'get_image_preview',
                 'price',
-            ]
+            ],
         }),
         ('Подробно', {
             'fields': [
@@ -71,7 +68,7 @@ class ProductAdmin(admin.ModelAdmin):
                 'description',
             ],
             'classes': [
-                'wide'
+                'wide',
             ],
         }),
     )
@@ -80,27 +77,31 @@ class ProductAdmin(admin.ModelAdmin):
         'get_image_preview',
     ]
 
-    class Media:
+    class Media:  # noqa: D106, WPS306, WPS431
         css = {
-            "all": (
-                static("admin/foodcartapp.css")
-            )
+            'all': (
+                static('admin/foodcartapp.css')
+            ),
         }
 
-    def get_image_preview(self, obj):
+    def get_image_preview(self, obj):  # noqa: D102, WPS110
         if not obj.image:
             return 'выберите картинку'
         return format_html('<img src="{url}" height="200"/>', url=obj.image.url)
     get_image_preview.short_description = 'превью'
 
-    def get_image_list_preview(self, obj):
+    def get_image_list_preview(self, obj):  # noqa: D102, WPS110
         if not obj.image or not obj.id:
             return 'нет картинки'
         edit_url = reverse('admin:foodcartapp_product_change', args=(obj.id,))
-        return format_html('<a href="{edit_url}"><img src="{src}" height="50"/></a>', edit_url=edit_url, src=obj.image.url)
+        return format_html(
+            '<a href="{edit_url}"><img src="{src}" height="50"/></a>',
+            edit_url=edit_url,
+            src=obj.image.url,
+        )
     get_image_list_preview.short_description = 'превью'
 
 
 @admin.register(ProductCategory)
-class ProductAdmin(admin.ModelAdmin):
-    pass
+class ProductAdmin(admin.ModelAdmin):  # noqa: D101, WPS440, F811
+    pass  # noqa: WPS420, WPS604

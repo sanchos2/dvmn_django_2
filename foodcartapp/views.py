@@ -1,13 +1,12 @@
 from django.http import JsonResponse
 from django.templatetags.static import static
 
+from foodcartapp.models import Product
 
-from .models import Product
 
-
-def banners_list_api(request):
+def banners_list_api(request):  # noqa: D103
     # FIXME move data to db?
-    return JsonResponse([
+    return JsonResponse([  # noqa: WPS317
         {
             'title': 'Burger',
             'src': static('burger.jpg'),
@@ -22,14 +21,14 @@ def banners_list_api(request):
             'title': 'New York',
             'src': static('tasty.jpg'),
             'text': 'Food is incomplete without a tasty dessert',
-        }
+        },
     ], safe=False, json_dumps_params={
         'ensure_ascii': False,
         'indent': 4,
     })
 
 
-def product_list_api(request):
+def product_list_api(request):  # noqa: D103
     products = Product.objects.select_related('category').available()
 
     dumped_products = []
@@ -48,7 +47,7 @@ def product_list_api(request):
             'restaurant': {
                 'id': product.id,
                 'name': product.name,
-            }
+            },
         }
         dumped_products.append(dumped_product)
     return JsonResponse(dumped_products, safe=False, json_dumps_params={
@@ -57,6 +56,6 @@ def product_list_api(request):
     })
 
 
-def register_order(request):
+def register_order(request):  # noqa: D103
     # TODO это лишь заглушка
     return JsonResponse({})
