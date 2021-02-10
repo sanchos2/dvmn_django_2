@@ -93,7 +93,7 @@ class Order(models.Model):
 
     firstname = models.CharField('Имя', max_length=50)  # noqa: WPS432
     lastname = models.CharField('Фамилия', max_length=50, blank=True)  # noqa: WPS432
-    phonenumber = PhoneNumberField('Телефон', region='RU')
+    phonenumber = PhoneNumberField('Телефон')
     address = models.TextField('Адрес доставки')
     order_date = models.DateTimeField('Дата/время заказа', auto_now_add=True)
 
