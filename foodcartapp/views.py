@@ -1,5 +1,6 @@
 from django.http import JsonResponse
 from django.templatetags.static import static
+from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
@@ -59,21 +60,32 @@ def product_list_api(request):  # noqa: D103
 
 
 @api_view(['POST'])
-def register_order(request):  # noqa: D103
+def register_order(request):  # noqa: D103, WPS212
     try:
         serialized_order = request.data
     except ValueError:
-        return Response({'error': 'data not recognized'})
+        return Response({'error': 'data not recognized'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if 'products' not in serialized_order:
+        return Response({'error': 'Products list is missing'}, status=status.HTTP_400_BAD_REQUEST)
+    if not isinstance(serialized_order['products'], list):
+        return Response({'error': 'Products not presented or not list'}, status=status.HTTP_400_BAD_REQUEST)
+    if not serialized_order['products']:
+        return Response({'error': 'Products list is empty'}, status=status.HTTP_400_BAD_REQUEST)
+
     order = Order.objects.create(
         firstname=serialized_order['firstname'],
         lastname=serialized_order['lastname'],
         phonenumber=serialized_order['phonenumber'],
         address=serialized_order['address'],
     )
+
     for product in serialized_order['products']:
+        if not isinstance(product['quantity'], int) and product['quantity'] < 0:
+            return Response({'error': 'data not recognized'}, status=status.HTTP_400_BAD_REQUEST)
         OrderItem.objects.create(
             order=order,
             product_id=product['product'],
             quantity=product['quantity'],
         )
-    return Response({'success': 'Order created successfully'})
+    return Response({'success': 'Order created successfully'}, status=status.HTTP_201_CREATED)
