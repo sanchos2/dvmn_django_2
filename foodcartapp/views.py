@@ -1,7 +1,7 @@
-import json
-
 from django.http import JsonResponse
 from django.templatetags.static import static
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
 from foodcartapp.models import Order, OrderItem, Product
 
@@ -58,11 +58,12 @@ def product_list_api(request):  # noqa: D103
     })
 
 
+@api_view(['POST'])
 def register_order(request):  # noqa: D103
     try:
-        serialized_order = json.loads(request.body.decode())
+        serialized_order = request.data
     except ValueError:
-        return JsonResponse({'error': 'data not recognized'})
+        return Response({'error': 'data not recognized'})
     order = Order.objects.create(
         firstname=serialized_order['firstname'],
         lastname=serialized_order['lastname'],
@@ -75,4 +76,4 @@ def register_order(request):  # noqa: D103
             product_id=product['product'],
             quantity=product['quantity'],
         )
-    return JsonResponse({})
+    return Response({'success': 'Order created successfully'})

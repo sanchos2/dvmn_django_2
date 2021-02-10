@@ -101,7 +101,7 @@ class Order(models.Model):
 
         verbose_name = 'Заказ'
         verbose_name_plural = 'Заказы'
-        ordering = ['order_date']
+        ordering = ['-order_date']
 
     def __str__(self):  # noqa: D105
         return f'{self.firstname} {self.lastname} {self.address}'
