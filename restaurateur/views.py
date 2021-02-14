@@ -6,7 +6,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views import View
 
-from foodcartapp.models import Product, Restaurant
+from foodcartapp.models import Order, Product, Restaurant
 
 
 class Login(forms.Form):  # noqa: D101
@@ -95,6 +95,5 @@ def view_restaurants(request):  # noqa: D103
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):  # noqa: D103
-    return render(request, template_name='order_items.html', context={
-        # TODO заглушка для нереализованного функционала
-    })
+    orders = Order.objects.all()
+    return render(request, template_name='order_items.html', context={'orders': orders})
