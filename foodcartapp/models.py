@@ -1,5 +1,6 @@
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.db.models import F, Sum  # noqa: WPS347
 from phonenumber_field.modelfields import PhoneNumberField
 
 
@@ -88,6 +89,18 @@ class RestaurantMenuItem(models.Model):  # noqa: D101
         return f'{self.restaurant.name} - {self.product.name}'
 
 
+class OrderQuerySet(models.QuerySet):
+    """Расчет цены заказа."""
+
+    def amount(self):  # noqa: D102
+        return self.annotate(
+            amount=Sum(
+                F('order_items__product__price') * F('order_items__quantity'),
+                output_field=models.DecimalField(),
+            ),
+        )
+
+
 class Order(models.Model):
     """Заказ."""
 
@@ -96,6 +109,7 @@ class Order(models.Model):
     phonenumber = PhoneNumberField('Телефон')
     address = models.TextField('Адрес доставки')
     order_date = models.DateTimeField('Дата/время заказа', auto_now_add=True)
+    objects = OrderQuerySet.as_manager()  # noqa: WPS110
 
     class Meta:  # noqa: D106, WPS306
 
