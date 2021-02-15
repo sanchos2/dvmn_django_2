@@ -12,8 +12,8 @@ class OrderItemSerializer(ModelSerializer):  # noqa: D101
 
 class OrderSerializer(ModelSerializer):  # noqa: D101
 
-    products = OrderItemSerializer(many=True)
+    products = OrderItemSerializer(many=True, write_only=True)
 
     class Meta:  # noqa: D106, WPS306
         model = Order
-        fields = ['firstname', 'lastname', 'address', 'phonenumber', 'products']
+        fields = ['id', 'firstname', 'lastname', 'address', 'phonenumber', 'products']

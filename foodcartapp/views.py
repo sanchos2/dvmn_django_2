@@ -64,16 +64,13 @@ def product_list_api(request):  # noqa: D103
 def register_order(request):  # noqa: D103, WPS212
     serializer = OrderSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-
     order = Order.objects.create(
         firstname=serializer.validated_data['firstname'],
         lastname=serializer.validated_data['lastname'],
         phonenumber=serializer.validated_data['phonenumber'],
         address=serializer.validated_data['address'],
     )
-
     products_fields = serializer.validated_data['products']
     products = [OrderItem(order=order, **fields) for fields in products_fields]
     OrderItem.objects.bulk_create(products)
-
-    return Response({'success': 'Order created successfully'}, status=status.HTTP_201_CREATED)
+    return Response(OrderSerializer(instance=order).data, status=status.HTTP_201_CREATED)
