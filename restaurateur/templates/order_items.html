@@ -22,7 +22,7 @@
     {% for order in orders %}
       <tr>
         <td>{{ order.id }}</td>
-        <td>{{ order.amount }}</td>
+        <td>{{ order.amount | floatformat:2 }}</td>
         <td>{{ order.firstname }}</td>
         <td>{{ order.phonenumber }}</td>
         <td>{{ order.address }}</td>

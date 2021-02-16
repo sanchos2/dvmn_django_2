@@ -71,6 +71,11 @@ def register_order(request):  # noqa: D103, WPS212
         address=serializer.validated_data['address'],
     )
     products_fields = serializer.validated_data['products']
-    products = [OrderItem(order=order, **fields) for fields in products_fields]
+    products = [OrderItem(
+        order=order,
+        price=fields['product'].price,
+        **fields,
+    ) for fields in products_fields
+    ]
     OrderItem.objects.bulk_create(products)
     return Response(OrderSerializer(instance=order).data, status=status.HTTP_201_CREATED)

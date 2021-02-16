@@ -95,7 +95,7 @@ class OrderQuerySet(models.QuerySet):
     def amount(self):  # noqa: D102
         return self.annotate(
             amount=Sum(
-                F('order_items__product__price') * F('order_items__quantity'),
+                F('order_items__price') * F('order_items__quantity'),
                 output_field=models.DecimalField(),
             ),
         )
@@ -137,6 +137,12 @@ class OrderItem(models.Model):
         verbose_name='Продукт',
     )
     quantity = models.PositiveIntegerField('Количество', validators=[MinValueValidator(1)])
+    price = models.DecimalField(
+        'цена на момент заказа',
+        max_digits=8,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+    )
 
     class Meta:  # noqa: D106, WPS306
 
