@@ -1,7 +1,9 @@
+from django.conf import settings
 from django.contrib import admin
-from django.shortcuts import reverse
+from django.shortcuts import HttpResponseRedirect, reverse
 from django.templatetags.static import static
 from django.utils.html import format_html
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from foodcartapp.models import Product, ProductCategory  # noqa:  I001
 from foodcartapp.models import Restaurant, RestaurantMenuItem  # noqa:  I001
@@ -117,3 +119,10 @@ class OrderItemInline(admin.TabularInline):  # noqa: D101
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):  # noqa: D101
     inlines = [OrderItemInline]
+
+    def response_change(self, request, obj):  # noqa: WPS110
+        """При переходе в админку из фронта редиректит обратно на фронт."""
+        response = super().response_change(request, obj)
+        if 'next' in request.GET and url_has_allowed_host_and_scheme(request.GET['next'], settings.ALLOWED_HOSTS):
+            return HttpResponseRedirect(request.GET['next'])
+        return response
