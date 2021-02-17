@@ -104,12 +104,18 @@ class OrderQuerySet(models.QuerySet):
 class Order(models.Model):
     """Заказ."""
 
+    order_status = [
+        ('Необработанный', 'Необработанный'),
+        ('Обработанный', 'Обработанный'),
+    ]
+
     firstname = models.CharField('Имя', max_length=50)  # noqa: WPS432
     lastname = models.CharField('Фамилия', max_length=50, blank=True)  # noqa: WPS432
     phonenumber = PhoneNumberField('Телефон')
     address = models.TextField('Адрес доставки')
     order_date = models.DateTimeField('Дата/время заказа', auto_now_add=True)
     objects = OrderQuerySet.as_manager()  # noqa: WPS110
+    status = models.CharField(max_length=14, choices=order_status, default='Необработанный')  # noqa: WPS432
 
     class Meta:  # noqa: D106, WPS306
 
