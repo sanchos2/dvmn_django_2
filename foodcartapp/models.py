@@ -115,7 +115,8 @@ class Order(models.Model):
     address = models.TextField('Адрес доставки')
     order_date = models.DateTimeField('Дата/время заказа', auto_now_add=True)
     objects = OrderQuerySet.as_manager()  # noqa: WPS110
-    status = models.CharField(max_length=14, choices=order_status, default='Необработанный')  # noqa: WPS432
+    status = models.CharField('Статус', max_length=14, choices=order_status, default='Необработанный')  # noqa: WPS432
+    comment = models.TextField('Коментарий', blank=True)
 
     class Meta:  # noqa: D106, WPS306
 
