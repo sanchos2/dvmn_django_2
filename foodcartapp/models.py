@@ -109,6 +109,10 @@ class Order(models.Model):
         ('Необработанный', 'Необработанный'),
         ('Обработанный', 'Обработанный'),
     ]
+    payment_method = [
+        ('Электронно', 'Электронно'),
+        ('Наличностью', 'Наличностью'),
+    ]
 
     firstname = models.CharField('Имя', max_length=50)  # noqa: WPS432
     lastname = models.CharField('Фамилия', max_length=50, blank=True)  # noqa: WPS432
@@ -120,6 +124,7 @@ class Order(models.Model):
     comment = models.TextField('Коментарий', blank=True)
     called_at = models.DateTimeField('Время звонка', blank=True, null=True)
     delivered_at = models.DateTimeField('Время доставки', blank=True, null=True)
+    payment = models.CharField('Способ оплаты', max_length=11, choices=payment_method)  # noqa: WPS432
 
     class Meta:  # noqa: D106, WPS306
 

@@ -127,6 +127,7 @@ class OrderAdmin(admin.ModelAdmin):  # noqa: D101
                 'lastname',
                 'phonenumber',
                 'address',
+                'payment',
                 'comment',
                 'status',
                 'created_at',
