@@ -119,6 +119,23 @@ class OrderItemInline(admin.TabularInline):  # noqa: D101
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):  # noqa: D101
     inlines = [OrderItemInline]
+    list_display = ['firstname', 'phonenumber', 'status', 'created_at']
+    fieldsets = (
+        ('Заказ', {
+            'fields': [
+                'firstname',
+                'lastname',
+                'phonenumber',
+                'address',
+                'comment',
+                'status',
+                'created_at',
+                'called_at',
+                'delivered_at',
+            ],
+        }),
+    )
+    readonly_fields = ['created_at']
 
     def response_change(self, request, obj):  # noqa: WPS110
         """При переходе в админку из фронта редиректит обратно на фронт."""

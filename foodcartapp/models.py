@@ -1,6 +1,7 @@
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import F, Sum  # noqa: WPS347
+from django.utils import timezone
 from phonenumber_field.modelfields import PhoneNumberField
 
 
@@ -113,16 +114,18 @@ class Order(models.Model):
     lastname = models.CharField('Фамилия', max_length=50, blank=True)  # noqa: WPS432
     phonenumber = PhoneNumberField('Телефон')
     address = models.TextField('Адрес доставки')
-    order_date = models.DateTimeField('Дата/время заказа', auto_now_add=True)
+    created_at = models.DateTimeField('Дата/время заказа', default=timezone.now)
     objects = OrderQuerySet.as_manager()  # noqa: WPS110
     status = models.CharField('Статус', max_length=14, choices=order_status, default='Необработанный')  # noqa: WPS432
     comment = models.TextField('Коментарий', blank=True)
+    called_at = models.DateTimeField('Время звонка', blank=True, null=True)
+    delivered_at = models.DateTimeField('Время доставки', blank=True, null=True)
 
     class Meta:  # noqa: D106, WPS306
 
         verbose_name = 'Заказ'
         verbose_name_plural = 'Заказы'
-        ordering = ['-order_date']
+        ordering = ['-created_at']
 
     def __str__(self):  # noqa: D105
         return f'{self.firstname} {self.lastname} {self.address}'
