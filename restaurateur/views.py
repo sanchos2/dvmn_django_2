@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from django import forms
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
@@ -6,7 +8,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views import View
 
-from foodcartapp.models import Order, Product, Restaurant
+from foodcartapp.models import Order, OrderItem, Product, Restaurant, RestaurantMenuItem  # noqa: I001
 
 
 class Login(forms.Form):  # noqa: D101
@@ -95,5 +97,28 @@ def view_restaurants(request):  # noqa: D103
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):  # noqa: D103
-    orders = Order.objects.amount()
+    orders = Order.objects.amount().values(
+        'id',
+        'status',
+        'payment',
+        'amount',
+        'firstname',
+        'phonenumber',
+        'address',
+        'comment',
+    )
+    queryset = RestaurantMenuItem.objects.filter(availability=True).values('product_id', 'restaurant_id')
+    products = defaultdict(set)
+    for query in queryset:
+        products[query['product_id']].add(query['restaurant_id'])
+    for order in orders:
+        restaurants = set()
+        for product in OrderItem.objects.filter(order_id=order['id']):
+            if restaurants:
+                restaurants = restaurants.intersection(products[product.product_id])
+            else:
+                restaurants = products[product.product_id]
+        if not restaurants:
+            continue
+        order['restaurant'] = Restaurant.objects.get(id=list(restaurants)[0]).name  # noqa: WPS221
     return render(request, template_name='order_items.html', context={'orders': orders})
