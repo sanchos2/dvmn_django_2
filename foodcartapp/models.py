@@ -166,3 +166,15 @@ class OrderItem(models.Model):
 
     def __str__(self):  # noqa: D105
         return f'{self.product} - {self.quantity}'
+
+
+class Place(models.Model):
+    """Адрес и его координаты."""
+
+    address = models.CharField('адрес', max_length=100)
+    lat = models.FloatField('Широта', null=True)
+    lon = models.FloatField('Долгота', null=True)
+    fetch_at = models.DateTimeField('Координаты загружены', null=True)
+
+    def __str__(self):  # noqa: D105
+        return self.address
