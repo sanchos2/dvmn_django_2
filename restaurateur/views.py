@@ -6,12 +6,14 @@ from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import user_passes_test
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.views import View
 from environs import Env
 from geopy import distance
+from requests import exceptions
 
 from restaurateur.coordinates import fetch_coordinates
-from foodcartapp.models import Order, OrderItem, Product, Restaurant, RestaurantMenuItem  # noqa: I001
+from foodcartapp.models import Order, OrderItem, Place, Product, Restaurant, RestaurantMenuItem  # noqa: I001
 
 env = Env()
 env.read_env()
@@ -127,11 +129,20 @@ def view_orders(request):  # noqa: D103, WPS231
                 restaurants = products[product.product_id]
         if not restaurants:
             continue
-        order_geo = fetch_coordinates(env('GEO_API_KEY'), order['address'])
+        place, created = Place.objects.get_or_create(address=order['address'])
+        if created:
+            try:
+                place.lat, place.lon = fetch_coordinates(env('GEO_API_KEY'), place.address)  # noqa: WPS414
+            except exceptions.HTTPError:
+                place.lat, place.lon = None, None  # noqa: WPS414
+            place.fetch_at = timezone.now()
+            place.save()
+        order_geo = place.lat, place.lon
         for restaurant in Restaurant.objects.filter(id__in=list(restaurants)):
+            place = Place.objects.get(address=restaurant.address)
             order['restaurants'].append({
                 'restaurant': restaurant,
-                'distance': distance.distance(order_geo, fetch_coordinates(env('GEO_API_KEY'), restaurant.address)).km,
+                'distance': distance.distance(order_geo, (place.lat, place.lon)).km,
             })
         order['restaurants'].sort(key=lambda restaurant: restaurant['distance'])  # noqa: WPS440, WPS441
     return render(request, template_name='order_items.html', context={'orders': orders})
