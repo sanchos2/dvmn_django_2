@@ -120,5 +120,5 @@ def view_orders(request):  # noqa: D103
                 restaurants = products[product.product_id]
         if not restaurants:
             continue
-        order['restaurant'] = Restaurant.objects.get(id=list(restaurants)[0]).name  # noqa: WPS221
+        order['restaurants'] = Restaurant.objects.filter(id__in=list(restaurants))
     return render(request, template_name='order_items.html', context={'orders': orders})
