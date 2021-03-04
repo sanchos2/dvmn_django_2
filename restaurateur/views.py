@@ -7,8 +7,14 @@ from django.contrib.auth.decorators import user_passes_test
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views import View
+from environs import Env
+from geopy import distance
 
+from restaurateur.coordinates import fetch_coordinates
 from foodcartapp.models import Order, OrderItem, Product, Restaurant, RestaurantMenuItem  # noqa: I001
+
+env = Env()
+env.read_env()
 
 
 class Login(forms.Form):  # noqa: D101
@@ -96,7 +102,7 @@ def view_restaurants(request):  # noqa: D103
 
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
-def view_orders(request):  # noqa: D103
+def view_orders(request):  # noqa: D103, WPS231
     orders = Order.objects.amount().values(
         'id',
         'status',
@@ -111,7 +117,8 @@ def view_orders(request):  # noqa: D103
     products = defaultdict(set)
     for query in queryset:
         products[query['product_id']].add(query['restaurant_id'])
-    for order in orders:
+    for order in orders:  # noqa: WPS426
+        order['restaurants'] = []
         restaurants = set()
         for product in OrderItem.objects.filter(order_id=order['id']):
             if restaurants:
@@ -120,5 +127,11 @@ def view_orders(request):  # noqa: D103
                 restaurants = products[product.product_id]
         if not restaurants:
             continue
-        order['restaurants'] = Restaurant.objects.filter(id__in=list(restaurants))
+        order_geo = fetch_coordinates(env('GEO_API_KEY'), order['address'])
+        for restaurant in Restaurant.objects.filter(id__in=list(restaurants)):
+            order['restaurants'].append({
+                'restaurant': restaurant,
+                'distance': distance.distance(order_geo, fetch_coordinates(env('GEO_API_KEY'), restaurant.address)).km,
+            })
+        order['restaurants'].sort(key=lambda restaurant: restaurant['distance'])  # noqa: WPS440, WPS441
     return render(request, template_name='order_items.html', context={'orders': orders})

@@ -34,13 +34,13 @@
         <td>{{ order.phonenumber }}</td>
         <td>{{ order.address }}</td>
         <td>{{ order.comment }}</td>
-        <td><a href="{% url "admin:foodcartapp_order_change" object_id=order.id %}?next={{ request.get_full_path|urlencode }}">Редактировать</a> </td>
         <td><details>
           <summary>Ресторан</summary>
           {% for restaurant in order.restaurants %}
-            {{ restaurant.name }}
+            <li>{{ restaurant.restaurant }} - {{ restaurant.distance | floatformat:2 }}км</li>
           {% endfor %}
         </details></td>
+        <td><a href="{% url "admin:foodcartapp_order_change" object_id=order.id %}?next={{ request.get_full_path|urlencode }}">Редактировать</a> </td>
       </tr>
     {% endfor %}
    </table>
