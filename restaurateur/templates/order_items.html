@@ -37,7 +37,7 @@
         <td><details>
           <summary>Ресторан</summary>
           {% for restaurant in order.restaurants %}
-            <li>{{ restaurant.restaurant }} - {{ restaurant.distance | floatformat:2 }}км</li>
+            <li>{{ restaurant.restaurant.name }} - {{ restaurant.distance | floatformat:2 }}км</li>
           {% endfor %}
         </details></td>
         <td><a href="{% url "admin:foodcartapp_order_change" object_id=order.id %}?next={{ request.get_full_path|urlencode }}">Редактировать</a> </td>

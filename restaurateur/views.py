@@ -13,7 +13,7 @@ from geopy import distance
 from requests import exceptions
 
 from restaurateur.coordinates import fetch_coordinates
-from foodcartapp.models import Order, OrderItem, Place, Product, Restaurant, RestaurantMenuItem  # noqa: I001
+from foodcartapp.models import Order, Place, Product, Restaurant, RestaurantMenuItem  # noqa: I001
 
 env = Env()
 env.read_env()
@@ -105,31 +105,22 @@ def view_restaurants(request):  # noqa: D103
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):  # noqa: D103, WPS231
-    orders = Order.objects.amount().values(
-        'id',
-        'status',
-        'payment',
-        'amount',
-        'firstname',
-        'phonenumber',
-        'address',
-        'comment',
-    )
-    queryset = RestaurantMenuItem.objects.filter(availability=True).values('product_id', 'restaurant_id')
+    orders = Order.objects.prefetch_related('order_items').amount()
+    queryset = RestaurantMenuItem.objects.filter(availability=True).select_related('restaurant')
     products = defaultdict(set)
     for query in queryset:
-        products[query['product_id']].add(query['restaurant_id'])
+        products[query.product_id].add(query.restaurant)
     for order in orders:  # noqa: WPS426
-        order['restaurants'] = []
         restaurants = set()
-        for product in OrderItem.objects.filter(order_id=order['id']):
+        for product in order.order_items.all():
             if restaurants:
                 restaurants = restaurants.intersection(products[product.product_id])
             else:
                 restaurants = products[product.product_id]
         if not restaurants:
             continue
-        place, created = Place.objects.get_or_create(address=order['address'])
+        order.restaurants = []
+        place, created = Place.objects.get_or_create(address=order.address)
         if created:
             try:
                 place.lat, place.lon = fetch_coordinates(env('GEO_API_KEY'), place.address)  # noqa: WPS414
@@ -137,12 +128,12 @@ def view_orders(request):  # noqa: D103, WPS231
                 place.lat, place.lon = None, None  # noqa: WPS414
             place.fetch_at = timezone.now()
             place.save()
-        order_geo = place.lat, place.lon
-        for restaurant in Restaurant.objects.filter(id__in=list(restaurants)):
+        order_coordinates = place.lat, place.lon
+        for restaurant in list(restaurants):
             place = Place.objects.get(address=restaurant.address)
-            order['restaurants'].append({
+            order.restaurants.append({
                 'restaurant': restaurant,
-                'distance': distance.distance(order_geo, (place.lat, place.lon)).km,
+                'distance': distance.distance(order_coordinates, (place.lat, place.lon)).km,
             })
-        order['restaurants'].sort(key=lambda restaurant: restaurant['distance'])  # noqa: WPS440, WPS441
+        order.restaurants.sort(key=lambda restaurant: restaurant['distance'])  # noqa: WPS440, WPS441
     return render(request, template_name='order_items.html', context={'orders': orders})
