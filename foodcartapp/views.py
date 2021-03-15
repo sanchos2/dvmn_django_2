@@ -1,36 +1,18 @@
 from django.db import transaction
 from django.http import JsonResponse
-from django.templatetags.static import static
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
+from banners.models import Banner
 from foodcartapp.models import Order, OrderItem, Product
 from foodcartapp.serializers import OrderSerializer
 
 
 def banners_list_api(request):  # noqa: D103
-    # FIXME move data to db?
-    return JsonResponse([  # noqa: WPS317
-        {
-            'title': 'Burger',
-            'src': static('burger.jpg'),
-            'text': 'Tasty Burger at your door step',
-        },
-        {
-            'title': 'Spices',
-            'src': static('food.jpg'),
-            'text': 'All Cuisines',
-        },
-        {
-            'title': 'New York',
-            'src': static('tasty.jpg'),
-            'text': 'Food is incomplete without a tasty dessert',
-        },
-    ], safe=False, json_dumps_params={
-        'ensure_ascii': False,
-        'indent': 4,
-    })
+    banners = Banner.objects.all()
+    dumped_banners = [{'title': banner.name, 'src': banner.picture.url, 'text': banner.text} for banner in banners]
+    return JsonResponse(dumped_banners, safe=False, json_dumps_params={'ensure_ascii': False, 'indent': 4})
 
 
 def product_list_api(request):  # noqa: D103
@@ -63,7 +45,7 @@ def product_list_api(request):  # noqa: D103
 
 @api_view(['POST'])
 @transaction.atomic
-def register_order(request):  # noqa: D103, WPS212
+def manage_order(request, pk=None):  # noqa: D103, WPS212
     serializer = OrderSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     order = Order.objects.create(

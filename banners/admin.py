@@ -7,4 +7,4 @@ from banners.models import Banner
 @admin.register(Banner)
 class BannerAdmin(SortableAdminMixin, admin.ModelAdmin):  # noqa: D101
     prepopulated_fields = {'slug': ('name', )}
-    list_display = ['order', 'name', 'slug']
+    list_display = ['order', 'name', 'slug', 'text']
