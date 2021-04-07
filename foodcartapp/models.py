@@ -119,7 +119,6 @@ class Order(models.Model):
     phonenumber = PhoneNumberField('Телефон')
     address = models.TextField('Адрес доставки')
     created_at = models.DateTimeField('Дата/время заказа', default=timezone.now, db_index=True)
-    objects = OrderQuerySet.as_manager()  # noqa: WPS110
     status = models.CharField(
         'Статус',
         max_length=14,  # noqa: WPS432
@@ -131,6 +130,8 @@ class Order(models.Model):
     called_at = models.DateTimeField('Время звонка', blank=True, null=True, db_index=True)
     delivered_at = models.DateTimeField('Время доставки', blank=True, null=True, db_index=True)
     payment = models.CharField('Способ оплаты', max_length=11, choices=Payment.choices, db_index=True)  # noqa: WPS432
+
+    objects = OrderQuerySet.as_manager()  # noqa: WPS110
 
     class Meta:  # noqa: D106, WPS306
 
