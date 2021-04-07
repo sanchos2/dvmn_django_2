@@ -7,9 +7,7 @@ class Migration(migrations.Migration):
 
     def rename_order_status(apps, schema_editor):
         Order = apps.get_model('foodcartapp', 'Order')
-        for order in Order.objects.all():
-            order.status = 'Необработанный'
-            order.save()
+        Order.objects.update(status='Необработанный')
 
     dependencies = [
         ('foodcartapp', '0043_auto_20210217_1536'),
