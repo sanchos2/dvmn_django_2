@@ -129,4 +129,4 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'assets'),
     os.path.join(BASE_DIR, 'bundles'),
 ]
-GEO_API_KEY = env('GEO_API_KEY')
+GEO_API_KEY = env('GEO_API_KEY', '1234567890')
