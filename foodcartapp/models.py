@@ -94,7 +94,7 @@ class RestaurantMenuItem(models.Model):  # noqa: D101
 class OrderQuerySet(models.QuerySet):
     """Расчет цены заказа."""
 
-    def amount(self):  # noqa: D102
+    def annotated_total_price(self):  # noqa: D102
         return self.annotate(
             amount=Sum(
                 F('order_items__price') * F('order_items__quantity'),
@@ -181,7 +181,7 @@ class Place(models.Model):
     address = models.CharField('адрес', max_length=100)
     lat = models.FloatField('Широта', null=True, blank=True)
     lon = models.FloatField('Долгота', null=True, blank=True)
-    fetch_at = models.DateTimeField('Координаты загружены', null=True, blank=True)
+    fetched_at = models.DateTimeField('Координаты загружены', null=True, blank=True)
 
     def __str__(self):  # noqa: D105
         return self.address
