@@ -12,7 +12,7 @@ class OrderItemSerializer(ModelSerializer):  # noqa: D101
 
 class OrderSerializer(ModelSerializer):  # noqa: D101
 
-    products = OrderItemSerializer(many=True, write_only=True)
+    products = OrderItemSerializer(many=True, write_only=True, allow_empty=False)
 
     class Meta:  # noqa: D106, WPS306
         model = Order
