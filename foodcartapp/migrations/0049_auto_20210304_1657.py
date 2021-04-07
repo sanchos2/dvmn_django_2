@@ -26,10 +26,10 @@ def create_objects(old_model, new_model):
         place, created = new_model.objects.get_or_create(address=item.address)
         try:
             place.lat, place.lon = fetch_coordinates(settings.GEO_API_KEY, item.address)
-        except exceptions.HTTPError as err:
+        except (exceptions.HTTPError, IndexError) as err:
             place.lat, place.lon = None, None
             print(err, file=sys.stderr)
-        place.fetch_at = timezone.now()
+        place.fetched_at = timezone.now()
         place.save()
 
 

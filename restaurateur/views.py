@@ -12,7 +12,7 @@ from django.views import View
 from geopy import distance
 from requests import exceptions
 
-from restaurateur.coordinates import fetch_coordinates
+from restaurateur.coordinates import fetch_coordinates, add_coordinates, return_place
 from foodcartapp.models import Order, Place, Product, Restaurant, RestaurantMenuItem  # noqa: I001
 
 
@@ -102,11 +102,11 @@ def view_restaurants(request):  # noqa: D103
 
 @user_passes_test(is_manager, login_url='restaurateur:login')  # noqa: WPS231
 def view_orders(request):  # noqa: D103, WPS231
-    orders = Order.objects.prefetch_related('order_items').amount()
-    queryset = RestaurantMenuItem.objects.filter(availability=True).select_related('restaurant')
+    orders = Order.objects.prefetch_related('order_items').annotated_total_price()
+    restaurants_menu = RestaurantMenuItem.objects.filter(availability=True).select_related('restaurant')
     products = defaultdict(set)
-    for query in queryset:
-        products[query.product_id].add(query.restaurant)
+    for menu in restaurants_menu:
+        products[menu.product_id].add(menu.restaurant)
     for order in orders:  # noqa: WPS426
         restaurants = set()
         for product in order.order_items.all():
@@ -116,18 +116,11 @@ def view_orders(request):  # noqa: D103, WPS231
                 restaurants = products[product.product_id]
         if not restaurants:
             continue
-        order.restaurants = []
-        place, created = Place.objects.get_or_create(address=order.address)
-        if created:
-            try:
-                place.lat, place.lon = fetch_coordinates(settings.GEO_API_KEY, place.address)  # noqa: WPS414
-            except exceptions.HTTPError:
-                place.lat, place.lon = None, None  # noqa: WPS414
-            place.fetch_at = timezone.now()
-            place.save()
+        place = return_place(order.address)
         order_coordinates = place.lat, place.lon
-        for restaurant in list(restaurants):
-            place = Place.objects.get(address=restaurant.address)
+        order.restaurants = []
+        for restaurant in restaurants:
+            place = return_place(restaurant.address)
             order.restaurants.append({
                 'restaurant': restaurant,
                 'distance': distance.distance(order_coordinates, (place.lat, place.lon)).km,
