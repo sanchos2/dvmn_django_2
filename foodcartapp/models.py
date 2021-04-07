@@ -118,18 +118,19 @@ class Order(models.Model):
     lastname = models.CharField('Фамилия', max_length=50, blank=True)  # noqa: WPS432
     phonenumber = PhoneNumberField('Телефон')
     address = models.TextField('Адрес доставки')
-    created_at = models.DateTimeField('Дата/время заказа', default=timezone.now)
+    created_at = models.DateTimeField('Дата/время заказа', default=timezone.now, db_index=True)
     objects = OrderQuerySet.as_manager()  # noqa: WPS110
     status = models.CharField(
         'Статус',
         max_length=14,  # noqa: WPS432
         choices=Status.choices,
         default=Status.UNPROCESSED,
+        db_index=True,
     )
     comment = models.TextField('Коментарий', blank=True)
-    called_at = models.DateTimeField('Время звонка', blank=True, null=True)
-    delivered_at = models.DateTimeField('Время доставки', blank=True, null=True)
-    payment = models.CharField('Способ оплаты', max_length=11, choices=Payment.choices)  # noqa: WPS432
+    called_at = models.DateTimeField('Время звонка', blank=True, null=True, db_index=True)
+    delivered_at = models.DateTimeField('Время доставки', blank=True, null=True, db_index=True)
+    payment = models.CharField('Способ оплаты', max_length=11, choices=Payment.choices, db_index=True)  # noqa: WPS432
 
     class Meta:  # noqa: D106, WPS306
 
