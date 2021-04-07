@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
         orderitem_set = OrderItem.objects.all()
         if orderitem_set.exists():
             for item in orderitem_set.iterator():
-                product = Product.objects.get(id=item.product_id)
+                product = item.product
                 item.price = product.price
                 item.save()
 
