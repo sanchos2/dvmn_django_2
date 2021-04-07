@@ -2,6 +2,7 @@ from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import F, Sum  # noqa: WPS347
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumberField
 
 
@@ -105,14 +106,13 @@ class OrderQuerySet(models.QuerySet):
 class Order(models.Model):
     """Заказ."""
 
-    order_status = [
-        ('Необработанный', 'Необработанный'),
-        ('Обработанный', 'Обработанный'),
-    ]
-    payment_method = [
-        ('Электронно', 'Электронно'),
-        ('Наличностью', 'Наличностью'),
-    ]
+    class Status(models.TextChoices):  # noqa: D106, WPS306, WPS431
+        UNPROCESSED = 'Необработанный', _('Необработанный')  # noqa: WPS115
+        PROCESSED = 'Обработанный', _('Обработанный')  # noqa: WPS115
+
+    class Payment(models.TextChoices):  # noqa: D106, WPS306, WPS431
+        CASH = 'Наличностью', _('Наличностью')  # noqa: WPS115
+        CARD = 'Электронно', _('Электронно')  # noqa: WPS115
 
     firstname = models.CharField('Имя', max_length=50)  # noqa: WPS432
     lastname = models.CharField('Фамилия', max_length=50, blank=True)  # noqa: WPS432
@@ -120,11 +120,16 @@ class Order(models.Model):
     address = models.TextField('Адрес доставки')
     created_at = models.DateTimeField('Дата/время заказа', default=timezone.now)
     objects = OrderQuerySet.as_manager()  # noqa: WPS110
-    status = models.CharField('Статус', max_length=14, choices=order_status, default='Необработанный')  # noqa: WPS432
+    status = models.CharField(
+        'Статус',
+        max_length=14,  # noqa: WPS432
+        choices=Status.choices,
+        default=Status.UNPROCESSED,
+    )
     comment = models.TextField('Коментарий', blank=True)
     called_at = models.DateTimeField('Время звонка', blank=True, null=True)
     delivered_at = models.DateTimeField('Время доставки', blank=True, null=True)
-    payment = models.CharField('Способ оплаты', max_length=11, choices=payment_method)  # noqa: WPS432
+    payment = models.CharField('Способ оплаты', max_length=11, choices=Payment.choices)  # noqa: WPS432
 
     class Meta:  # noqa: D106, WPS306
 
