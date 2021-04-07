@@ -59,6 +59,19 @@ pip install -r requirements.txt
 python manage.py migrate
 ```
 
+Создайте файл .env в корневой папке проекта и пропишите следующие переменные окружения:
+
+`GEO_API_KEY` - ключ от Yandex geocoder API ([как получить](https://devman.org/encyclopedia/api-docs/yandex-geocoder-api/))
+
+Пример:
+```shell
+GEO_API_KEY=23432khfkfffu8o48yt832471847
+SECRET_KEY=sdafh74618rhfnk6ee721909
+DEBUG=True
+ALLOWED_HOSTS=127.0.0.1
+```
+Важно! - в production установить DEBUG в False
+
 Запустите сервер:
 
 ```sh

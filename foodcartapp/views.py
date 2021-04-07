@@ -11,7 +11,13 @@ from foodcartapp.serializers import OrderSerializer
 
 def banners_list_api(request):  # noqa: D103
     banners = Banner.objects.all()
-    dumped_banners = [{'title': banner.name, 'src': banner.picture.url, 'text': banner.text} for banner in banners]
+    dumped_banners = [
+        {
+            'title': banner.name,
+            'src': banner.picture.url,
+            'text': banner.text,
+        } for banner in banners
+    ]
     return JsonResponse(dumped_banners, safe=False, json_dumps_params={'ensure_ascii': False, 'indent': 4})
 
 

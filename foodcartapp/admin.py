@@ -106,7 +106,7 @@ class ProductAdmin(admin.ModelAdmin):  # noqa: D101
     get_image_list_preview.short_description = 'превью'
 
 
-@admin.register(ProductCategory)
+@admin.register(ProductCategory)  # noqa: WPS440, F811
 class ProductAdmin(admin.ModelAdmin):  # noqa: D101, WPS440, F811
     pass  # noqa: WPS420, WPS604
 

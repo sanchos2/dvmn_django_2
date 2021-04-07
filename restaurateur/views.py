@@ -1,6 +1,7 @@
 from collections import defaultdict
 
 from django import forms
+from django.conf import settings
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import user_passes_test
@@ -8,15 +9,11 @@ from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views import View
-from environs import Env
 from geopy import distance
 from requests import exceptions
 
 from restaurateur.coordinates import fetch_coordinates
 from foodcartapp.models import Order, Place, Product, Restaurant, RestaurantMenuItem  # noqa: I001
-
-env = Env()
-env.read_env()
 
 
 class Login(forms.Form):  # noqa: D101
@@ -103,7 +100,7 @@ def view_restaurants(request):  # noqa: D103
     })
 
 
-@user_passes_test(is_manager, login_url='restaurateur:login')
+@user_passes_test(is_manager, login_url='restaurateur:login')  # noqa: WPS231
 def view_orders(request):  # noqa: D103, WPS231
     orders = Order.objects.prefetch_related('order_items').amount()
     queryset = RestaurantMenuItem.objects.filter(availability=True).select_related('restaurant')
@@ -123,7 +120,7 @@ def view_orders(request):  # noqa: D103, WPS231
         place, created = Place.objects.get_or_create(address=order.address)
         if created:
             try:
-                place.lat, place.lon = fetch_coordinates(env('GEO_API_KEY'), place.address)  # noqa: WPS414
+                place.lat, place.lon = fetch_coordinates(settings.GEO_API_KEY, place.address)  # noqa: WPS414
             except exceptions.HTTPError:
                 place.lat, place.lon = None, None  # noqa: WPS414
             place.fetch_at = timezone.now()
